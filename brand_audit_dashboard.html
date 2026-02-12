@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2025 ByteDance & TikTok Employer Brand Audit</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bd-blue: #2d6aa0;
+    --bd-deep: #1a3a5c;
+    --tt-pink: #FE2C55;
+    --tt-cyan: #25F4EE;
+    --dark: #0f172a;
+    --card: #ffffff;
+    --bg: #f0f4f8;
+    --border: #dce3ec;
+    --muted: #5a6a7e;
+    --green: #0d9b5a;
+    --amber: #d97706;
+    --red: #dc2626;
+    --purple: #7c3aed;
+    --teal: #0891b2;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--dark); line-height: 1.6; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #0a1628 0%, #1a3a5c 40%, #0d2137 70%, #1a0a1e 100%);
+    color: #fff; padding: 52px 24px 44px; text-align: center; position: relative; overflow: hidden;
+  }
+  .header::before {
+    content: ''; position: absolute; top: -60%; right: -10%; width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(254,44,85,0.12) 0%, transparent 70%); pointer-events: none;
+  }
+  .header::after {
+    content: ''; position: absolute; bottom: -40%; left: -5%; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(37,244,238,0.08) 0%, transparent 70%); pointer-events: none;
+  }
+  .header h1 { font-size: 34px; font-weight: 800; letter-spacing: -0.5px; position: relative; }
+  .header h1 .accent-bd { color: #6db3f2; }
+  .header h1 .accent-tt { color: var(--tt-pink); }
+  .method-pills {
+    display: flex; gap: 10px; margin-top: 22px; justify-content: center; flex-wrap: wrap; position: relative;
+  }
+  .method-pill {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 500;
+    backdrop-filter: blur(4px); display: flex; align-items: center; gap: 8px;
+  }
+  .method-pill .pill-num {
+    background: rgba(255,255,255,0.15); width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 28px 16px 60px; }
+
+  .section { margin-bottom: 40px; }
+  .section-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--bd-blue), var(--bd-deep));
+    color: #fff; width: 30px; height: 30px; border-radius: 8px;
+    font-size: 14px; font-weight: 700; margin-right: 10px; vertical-align: middle;
+  }
+  .section-title { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+
+  .card {
+    background: var(--card); border-radius: 14px; padding: 24px;
+    border: 1px solid var(--border); margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
+
+  /* Executive Summary */
+  .exec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .exec-stat {
+    background: var(--card); border-radius: 12px; padding: 22px 16px;
+    border: 1px solid var(--border); text-align: center;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04); position: relative; overflow: hidden;
+  }
+  .exec-stat::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  }
+  .exec-stat.blue::after { background: linear-gradient(90deg, var(--bd-blue), #4ba3e3); }
+  .exec-stat.pink::after { background: linear-gradient(90deg, var(--tt-pink), #ff6b8a); }
+  .exec-stat.amber::after { background: linear-gradient(90deg, var(--amber), #f59e0b); }
+  .exec-stat.green::after { background: linear-gradient(90deg, var(--green), #34d399); }
+  .exec-stat.purple::after { background: linear-gradient(90deg, var(--purple), #a78bfa); }
+  .exec-stat .num { font-size: 34px; font-weight: 800; }
+  .exec-stat .label { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+  .exec-stat.blue .num { color: var(--bd-blue); }
+  .exec-stat.pink .num { color: var(--tt-pink); }
+  .exec-stat.amber .num { color: var(--amber); }
+  .exec-stat.green .num { color: var(--green); }
+  .exec-stat.purple .num { color: var(--purple); }
+
+  .insight-list { list-style: none; }
+  .insight-list li { padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .insight-list li:last-child { border-bottom: none; }
+
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; margin-right: 6px; }
+  .tag-green { background: #dcfce7; color: #166534; }
+  .tag-red { background: #fee2e2; color: #991b1b; }
+  .tag-amber { background: #fef3c7; color: #92400e; }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-purple { background: #ede9fe; color: #5b21b6; }
+
+  /* Charts */
+  .chart-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .chart-row.two { grid-template-columns: repeat(2, 1fr); }
+  .chart-box {
+    background: var(--card); border-radius: 14px; padding: 20px;
+    border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .chart-box h4 { font-size: 14px; font-weight: 700; margin-bottom: 12px; text-align: center; }
+  .chart-box canvas { max-height: 320px; }
+
+  /* Quotes */
+  .quote-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin-top: 14px; }
+  .quote {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-left: 3px solid var(--bd-blue);
+    padding: 14px 16px; border-radius: 0 10px 10px 0;
+    font-size: 13px; font-style: italic; color: #334155;
+  }
+  .quote.tt-accent { border-left-color: var(--tt-pink); }
+  .quote.teal-accent { border-left-color: var(--teal); }
+  .quote.purple-accent { border-left-color: var(--purple); }
+  .quote.amber-accent { border-left-color: var(--amber); }
+  .quote.red-accent { border-left-color: var(--red); }
+  .quote .src { font-style: normal; font-weight: 600; color: var(--muted); font-size: 11px; margin-top: 6px; }
+
+  /* Sweet spots */
+  .sweet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .sweet-card {
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border: 1px solid #bbf7d0;
+    border-radius: 12px; padding: 20px; text-align: center;
+  }
+  .sweet-card .icon { font-size: 28px; margin-bottom: 6px; }
+  .sweet-card h4 { font-size: 14px; font-weight: 700; color: #166534; }
+  .sweet-card p { font-size: 12px; color: #334155; margin-top: 4px; }
+
+  .gap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 16px; }
+  .gap-card {
+    background: linear-gradient(135deg, #fef2f2, #fff1f2); border: 1px solid #fecaca;
+    border-radius: 12px; padding: 20px;
+  }
+  .gap-card h4 { font-size: 14px; font-weight: 700; color: #991b1b; margin-bottom: 6px; }
+  .gap-card p { font-size: 13px; color: #334155; }
+  .gap-card .action { margin-top: 8px; font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* Channels */
+  .channel-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .rank-list { list-style: none; counter-reset: rank; }
+  .rank-list li {
+    counter-increment: rank; padding: 12px 0; border-bottom: 1px solid var(--border);
+    font-size: 14px; display: flex; align-items: flex-start; gap: 10px;
+  }
+  .rank-list li::before {
+    content: counter(rank); background: linear-gradient(135deg, var(--bd-blue), var(--bd-deep));
+    color: #fff; width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+
+  .bar-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .bar-track { background: #e2e8f0; border-radius: 6px; height: 10px; margin-bottom: 12px; }
+  .bar-fill { height: 100%; border-radius: 6px; }
+
+  .footer { text-align: center; padding: 24px; font-size: 12px; color: var(--muted); }
+
+  @media (max-width: 768px) {
+    .chart-row, .chart-row.two { grid-template-columns: 1fr; }
+    .header h1 { font-size: 22px; }
+    .exec-grid { grid-template-columns: repeat(2, 1fr); }
+    .method-pills { gap: 6px; }
+    .method-pill { font-size: 11px; padding: 6px 12px; }
+    .quote-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>2025 <span class="accent-bd">ByteDance</span> & <span class="accent-tt">TikTok</span> Employer Brand Audit</h1>
+  <div class="method-pills">
+    <div class="method-pill"><span class="pill-num">6K</span> Survey responses</div>
+    <div class="method-pill"><span class="pill-num">9</span> Markets: US, SG, AU, UK, JP, UAE, TH, VN, BR</div>
+    <div class="method-pill"><span class="pill-num">50</span> Focus group participants</div>
+    <div class="method-pill"><span class="pill-num">3</span> Segments: Students &middot; Early Career &middot; Experienced</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ====== 1. EXECUTIVE SUMMARY ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">1</span>Executive Summary</div>
+
+  <div class="exec-grid">
+    <div class="exec-stat blue">
+      <div class="num">69%</div>
+      <div class="label">Name Google as top employer (all segments)</div>
+    </div>
+    <div class="exec-stat pink">
+      <div class="num">22%</div>
+      <div class="label">Students consider TikTok a top employer</div>
+    </div>
+    <div class="exec-stat amber">
+      <div class="num">35%</div>
+      <div class="label">"Don't know enough" about ByteDance (top barrier)</div>
+    </div>
+    <div class="exec-stat green">
+      <div class="num">64%</div>
+      <div class="label">Competitive salary is #1 candidate priority globally</div>
+    </div>
+    <div class="exec-stat purple">
+      <div class="num">8% / 12%</div>
+      <div class="label">Potential applicant rate: ByteDance / TikTok</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Key Findings at a Glance</h3>
+    <ul class="insight-list">
+      <li><span class="tag tag-green">Strength</span> Career growth opportunities are our strongest brand association, ranking #1 for ByteDance and top 3 for TikTok across all segments.</li>
+      <li><span class="tag tag-green">Strength</span> Competitive salary, learning & development, and "good reference for future career" are sweet spots where candidate priorities align with our brand perception.</li>
+      <li><span class="tag tag-red">Gap</span> Job security and work-life balance are top 3 candidate priorities but among the attributes least associated with us. Both brands trail Google, Meta, and Amazon.</li>
+      <li><span class="tag tag-red">Gap</span> 35% of non-considerers cite "I don't know enough about the company" for ByteDance; work-life balance concerns top TikTok barriers at 32%.</li>
+      <li><span class="tag tag-amber">Opportunity</span> Funnel drop-off is significant: awareness is strong (82-92% for ByteDance in key markets, 90%+ for TikTok), but potential applicants are only 8% (BD) and 12% (TT).</li>
+      <li><span class="tag tag-blue">Channel</span> LinkedIn (65%), online job boards (55%), and career websites (54%) are the top discovery channels. Experienced hires trust employee conversations most (51%).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ====== 2. TOP EMPLOYER RANKING ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">2</span>Top Employer Ranking</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">Candidates were asked: "Who do you consider to be a Top Employer?" Google dominates across all segments.</p>
+  <div class="chart-row" id="employerCharts">
+    <div class="chart-box"><h4>Students</h4><canvas id="empStudents"></canvas></div>
+    <div class="chart-box"><h4>Early Career (1-3 yrs)</h4><canvas id="empEarly"></canvas></div>
+    <div class="chart-box"><h4>Experienced (3+ yrs)</h4><canvas id="empExperienced"></canvas></div>
+  </div>
+</div>
+
+<!-- ====== 3. WHAT CANDIDATES LOOK FOR ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">3</span>What Candidates Look For</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">"How important is it to you that your employer offers these attributes?" (% selecting "Very Important")</p>
+
+  <div class="chart-row" id="prefsCharts">
+    <div class="chart-box"><h4>Students</h4><canvas id="prefStudents"></canvas></div>
+    <div class="chart-box"><h4>Early Career (1-3 yrs)</h4><canvas id="prefEarly"></canvas></div>
+    <div class="chart-box"><h4>Experienced (3+ yrs)</h4><canvas id="prefExp"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>What These Attributes Mean to Candidates (Focus Group Insights)</h3>
+    <div class="quote-grid">
+      <div class="quote">
+        "Another aspect is learning, if I invest significant effort here, will it help me get to where I want to be in five years? These are my two main considerations."
+        <div class="src">SG Experienced &mdash; on Career Growth</div>
+      </div>
+      <div class="quote tt-accent">
+        "Work-life balance isn't about working less &mdash; it's about knowing what's expected."
+        <div class="src">US Early Career &mdash; on Work-Life Balance</div>
+      </div>
+      <div class="quote teal-accent">
+        "The number one factor is financial strength. Consistent earnings and a strong balance sheet signal maturity and structure."
+        <div class="src">SG Experienced &mdash; on Job Security</div>
+      </div>
+      <div class="quote purple-accent">
+        "I want opportunities to take on more responsibility while being guided. Taking responsibility involves risk, so support matters &mdash; if small mistakes are not heavily penalized, success helps you grow significantly."
+        <div class="src">SG Early Career &mdash; on Career Growth</div>
+      </div>
+      <div class="quote amber-accent">
+        "Work-life balance for me is about flexibility and trust. Not clocking hours, but being treated like an adult."
+        <div class="src">SG Experienced &mdash; on Work-Life Balance</div>
+      </div>
+      <div class="quote">
+        "When choosing an employer, compensation is a primary factor. Beyond that, I value flexibility in how I work &mdash; whether I am micromanaged or given independence."
+        <div class="src">SG Early Career &mdash; on Compensation & Flexibility</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Global View: Top 3 Priorities</h3>
+    <div style="display:flex;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;">
+        <div class="bar-label"><span>Competitive salary</span><strong>64%</strong></div>
+        <div class="bar-track"><div class="bar-fill" style="width:64%;background:linear-gradient(90deg,var(--bd-blue),#4ba3e3);"></div></div>
+        <div class="bar-label"><span>Career growth opportunities</span><strong>60%</strong></div>
+        <div class="bar-track"><div class="bar-fill" style="width:60%;background:linear-gradient(90deg,var(--bd-blue),#4ba3e3);"></div></div>
+        <div class="bar-label"><span>Job security</span><strong>59%</strong></div>
+        <div class="bar-track"><div class="bar-fill" style="width:59%;background:linear-gradient(90deg,var(--bd-blue),#4ba3e3);"></div></div>
+      </div>
+      <div style="flex:1;min-width:240px;font-size:13px;color:var(--muted);">
+        <p><strong>Notes:</strong> Work-life balance is ranked 2nd most important for Experienced Tech and Non-Tech candidates. Being a recognized leader in the tech industry was ranked above work-life balance for Tech students.</p>
+        <p style="margin-top:8px;">Our unique EVP strengths &mdash; great products (42%), meaningful mission (40%), recognized tech leader (40%) &mdash; were less frequently selected by candidates overall.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 4. WHY CHOOSING US ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">4</span>Why Candidates Would Choose Us</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">"You indicated you would consider working for TikTok/ByteDance. Why is that?" (Among those who would consider)</p>
+
+  <div class="chart-row two">
+    <div class="chart-box"><h4>Why Consider ByteDance</h4><canvas id="whyBD"></canvas></div>
+    <div class="chart-box"><h4>Why Consider TikTok</h4><canvas id="whyTT"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Candidate Voices: Why They're Drawn to Us</h3>
+    <div class="quote-grid">
+      <div class="quote">
+        "For me, the most appealing aspects of ByteDance are compensation and the potential for mentorship. The engineering work &mdash; processing large volumes of data in real time &mdash; makes both factors especially attractive."
+        <div class="src">SG Early Career &mdash; ByteDance</div>
+      </div>
+      <div class="quote tt-accent">
+        "The opportunity to contribute to an established and widely used product like ByteDance is very appealing. It would provide meaningful challenges, exposure to the codebase, and reassurance that the work I am doing has real impact."
+        <div class="src">SG Early Career &mdash; ByteDance</div>
+      </div>
+      <div class="quote teal-accent">
+        "Opportunities to work on systems at ByteDance's scale, serving millions of users, are rare and highly appealing. Mentorship is also very important, although it can depend on the team."
+        <div class="src">SG Early Career &mdash; ByteDance</div>
+      </div>
+      <div class="quote purple-accent">
+        "Their tech is mostly on the recommender system. That's how they serve the content, that's the underlying technology."
+        <div class="src">US Experienced &mdash; TikTok Tech Credibility</div>
+      </div>
+      <div class="quote amber-accent">
+        "Recommendation engine as well &mdash; as a technical person I can see so many opportunities working in TikTok. It can be recommendation engines, their infrastructure, how they handle so many people."
+        <div class="src">US Student &mdash; TikTok Tech Opportunities</div>
+      </div>
+      <div class="quote red-accent">
+        "Given that they're serving billions of users... handling real time personalization... the data volume which they're dealing with is more diverse... they're doing really good job managing those massive feature engineering pipelines."
+        <div class="src">SG Experienced &mdash; ByteDance Infrastructure</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-top:14px;"><strong>Note:</strong> "Company culture and values align with mine" was among the least selected reasons candidates would consider us. Internal survey confirms poor perception of company culture as a common misconception to address.</p>
+  </div>
+</div>
+
+<!-- ====== 5. WHY NOT CHOOSING US ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">5</span>Why Candidates Would NOT Choose Us</div>
+  <p style="font-size:14px;color:var(--muted);margin-bottom:16px;">"You indicated you would NOT consider working for TikTok/ByteDance. Why is that?" (Among non-considerers)</p>
+
+  <div class="chart-row two">
+    <div class="chart-box"><h4>ByteDance: Top Barriers</h4><canvas id="whyNotBD"></canvas></div>
+    <div class="chart-box"><h4>TikTok: Top Barriers</h4><canvas id="whyNotTT"></canvas></div>
+  </div>
+
+  <div class="card" style="margin-top:16px;">
+    <h3>Candidate Voices: Why They Hesitate</h3>
+    <div class="quote-grid">
+      <div class="quote red-accent">
+        "Definitely for the brand name, I would definitely want to join the company. But then... if it's like way too much... in a couple of years I would get the burnout."
+        <div class="src">SG Experienced &mdash; Work-Life Balance</div>
+      </div>
+      <div class="quote amber-accent">
+        "I don't really know how they work day to day. That's the main issue &mdash; not that it's bad, but that there isn't much information."
+        <div class="src">AU Experienced &mdash; Knowledge Gap</div>
+      </div>
+      <div class="quote">
+        "I feel like their job applications are very cluttered. The different roles have very small differences in their description... For example, it'll be like 6 AI engineering roles and they have subtle differences in the title."
+        <div class="src">SG Early Career &mdash; Role Clarity</div>
+      </div>
+      <div class="quote tt-accent">
+        "From what I hear, it's very intense. And intensity can be good, but it depends how long you're expected to sustain it."
+        <div class="src">US Experienced &mdash; Work-Life Balance</div>
+      </div>
+      <div class="quote purple-accent">
+        "I think a lot of my hesitation is based on assumptions. I don't know anyone working there, so it's mostly what you read or hear."
+        <div class="src">AU Experienced &mdash; Perception vs Reality</div>
+      </div>
+      <div class="quote teal-accent">
+        "The culture and the ways of working. Cause I think all of us, we're under the impression that because Chinese company, they just have a Chinese sort of way of working, but it might be different. So if they communicated that."
+        <div class="src">AU Experienced &mdash; Culture Perception</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 6. HOW CANDIDATES GET TO KNOW US ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">6</span>How Candidates Get to Know Us</div>
+
+  <div class="channel-row">
+    <div class="card">
+      <h3>Top Channels Used</h3>
+      <ol class="rank-list">
+        <li><div><strong>LinkedIn (65%)</strong><br><span style="font-size:12px;color:var(--muted);">"LinkedIn is where I see things first, but I only click if it feels specific."</span></div></li>
+        <li><div><strong>Online job boards (55%)</strong><br><span style="font-size:12px;color:var(--muted);">Consistent across all segments and markets.</span></div></li>
+        <li><div><strong>Company career websites (54%)</strong><br><span style="font-size:12px;color:var(--muted);">Used for fast answers: what teams do, how work is structured.</span></div></li>
+      </ol>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px;"><strong>Japan is unique:</strong> Company website (68%), Online job boards (62%), Snapchat (50%)</p>
+    </div>
+
+    <div class="card">
+      <h3>Top Sources Influencing Impressions</h3>
+      <ol class="rank-list">
+        <li><div><strong>Company website (48%)</strong><br><span style="font-size:12px;color:var(--muted);">But candidates consume with discretion &mdash; "what they describe could be just some kind of fluffy."</span></div></li>
+        <li><div><strong>Online employee reviews (43%)</strong><br><span style="font-size:12px;color:var(--muted);">Glassdoor, Blind. "I use it more to see if the same issues keep coming up."</span></div></li>
+        <li><div><strong>Conversations with current/former employees (42%)</strong><br><span style="font-size:12px;color:var(--muted);">For experienced hires (51%), this is THE most trusted source. "That's the most reliable signal for me."</span></div></li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h3>Top Content Preferences</h3>
+      <ol class="rank-list">
+        <li><div><strong>Short-form videos & day-in-the-life stories (50%)</strong><br><span style="font-size:12px;color:var(--muted);">"Informative promotional video that doesn't only show the building but also the technology and the day-to-day life."</span></div></li>
+        <li><div><strong>Project or case study highlights (36%)</strong><br><span style="font-size:12px;color:var(--muted);">Technical blogs, post-mortems and project deep-dives signal seriousness.</span></div></li>
+        <li><div><strong>Blog posts or articles by employees (36%)</strong><br><span style="font-size:12px;color:var(--muted);">"I trust content more when it comes from actual engineers talking about challenges or trade-offs."</span></div></li>
+      </ol>
+      <p style="font-size:12px;color:var(--muted);margin-top:12px;"><strong>Key insight:</strong> Content from engineers themselves carries far more weight than centrally produced employer stories. "If it looks like marketing, I usually skip it."</p>
+    </div>
+  </div>
+</div>
+
+<!-- ====== 7. 2026 PRIORITIES ====== -->
+<div class="section">
+  <div class="section-title"><span class="section-num">7</span>Opportunities for 2026</div>
+
+  <div class="card">
+    <h3>5 Sweet Spots: Where Candidate Priorities Align with Our Brand</h3>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;">These attributes are both important to candidates AND already associated with ByteDance/TikTok. Double down here.</p>
+    <div class="sweet-grid">
+      <div class="sweet-card">
+        <div class="icon">&#x1F4B0;</div>
+        <h4>Competitive Salary</h4>
+        <p>#1 candidate priority (64%). Already ranked #4 in brand associations.</p>
+      </div>
+      <div class="sweet-card">
+        <div class="icon">&#x1F4C8;</div>
+        <h4>Career Growth</h4>
+        <p>#2 priority (60%). Ranked #1 association for ByteDance. On par with Amazon and Meta.</p>
+      </div>
+      <div class="sweet-card">
+        <div class="icon">&#x1F4DA;</div>
+        <h4>Learning & Development</h4>
+        <p>Top 5 priority across all segments. Strongly reflected in brand perception.</p>
+      </div>
+      <div class="sweet-card">
+        <div class="icon">&#x1F31F;</div>
+        <h4>Good Reference for Future Career</h4>
+        <p>Top 5 for students (58%). Strong association in SG (45%) and UK (39%).</p>
+      </div>
+      <div class="sweet-card">
+        <div class="icon">&#x1F3C6;</div>
+        <h4>Competitive Benefits</h4>
+        <p>Important for experienced candidates (54-58%). Part of compensation appeal.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Addressing Negative Conceptions</h3>
+    <div class="gap-grid">
+      <div class="gap-card">
+        <h4>Job Security & Business Stability</h4>
+        <p>#3 candidate priority (59%), but one of the attributes least associated with us. ByteDance trails Amazon, Meta, and Google. TikTok concern at 28%: "Concerns about job or business stability."</p>
+        <div class="action">Action: Build trust by proactively sharing content on business direction, stability, and long-term strategy in a transparent manner.</div>
+      </div>
+      <div class="gap-card">
+        <h4>Work-Life Balance</h4>
+        <p>Top barrier for TikTok (32%) and ByteDance SG (35%). Candidates define it as reasonable working hours (53%) and growing career without sacrificing personal life (47%).</p>
+        <div class="action">Action: Provide transparent, credible content on what work-life balance looks like, using real examples and employee perspectives. Not polished &mdash; real.</div>
+      </div>
+      <div class="gap-card">
+        <h4>"Don't Know Enough About the Company"</h4>
+        <p>35% of ByteDance non-considerers. Awareness is high but understanding is shallow. Candidates don't know what it's like to work here day to day.</p>
+        <div class="action">Action: Improve understanding through clearer, more authentic storytelling through the lens of employees. Better alignment of EVP pillars based on candidate insights.</div>
+      </div>
+      <div class="gap-card">
+        <h4>Role Clarity & Job Fit</h4>
+        <p>28% cite "No job opportunities that fit my profile." Focus groups reveal cluttered, vague job descriptions and inconsistent information during interviews.</p>
+        <div class="action">Action: Provide clear, detailed, consistent information about roles, teams and responsibilities to reduce uncertainty and make it easier for the right talent to engage.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>2026 Priorities</h3>
+    <ul class="insight-list">
+      <li><span class="tag tag-blue">1</span> <strong>Strengthen work-life balance narrative</strong> &mdash; Provide transparent, credible content on what WLB looks like for us, using real employee examples. Not polished brand messaging &mdash; "if it looks like marketing, I usually skip it."</li>
+      <li><span class="tag tag-blue">2</span> <strong>Build job stability confidence</strong> &mdash; Proactively share content on business direction, financial health, and long-term strategy. Candidates equate stability with "clear and sustainable revenue" and "low layoff rates."</li>
+      <li><span class="tag tag-blue">3</span> <strong>Close the knowledge gap</strong> &mdash; Convert awareness into understanding. Focus on authentic employee storytelling, day-in-the-life content, and technical deep-dives that show what we actually do, not who we say we are.</li>
+      <li><span class="tag tag-blue">4</span> <strong>Improve role clarity and JD quality</strong> &mdash; Reduce cluttered, vague job descriptions. Provide clear team context, specific responsibilities, and consistent information throughout the hiring process.</li>
+      <li><span class="tag tag-blue">5</span> <strong>Activate employees as advocates</strong> &mdash; For experienced hires (3+ yrs), conversations with current/former employees are the #1 trusted source (51%). Strengthen how we bring our EVP to life internally to turn employees into authentic advocates.</li>
+    </ul>
+  </div>
+</div>
+
+</div>
+
+<div class="footer">
+  Data sourced from 2025 Employer Brand Audit &middot; Dashboard generated Feb 2026
+</div>
+
+<script>
+// Color palette
+const BD_BLUE = '#2d6aa0';
+const BD_DEEP = '#1a3a5c';
+const TT_PINK = '#FE2C55';
+const TT_CYAN = '#25F4EE';
+const GOOGLE_CLR = '#4285F4';
+const META_CLR = '#0668E1';
+const AMAZON_CLR = '#FF9900';
+const MUTED = '#94a3b8';
+const TEAL = '#0891b2';
+const PURPLE = '#7c3aed';
+
+// ====== 2. TOP EMPLOYER RANKING ======
+function makeEmployerChart(canvasId, data) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  const colors = data.map(d => {
+    if (d.label === 'Google') return GOOGLE_CLR;
+    if (d.label === 'Meta') return META_CLR;
+    if (d.label === 'Amazon') return AMAZON_CLR;
+    if (d.label === 'TikTok') return TT_PINK;
+    if (d.label === 'ByteDance') return BD_BLUE;
+    return MUTED;
+  });
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [{
+        data: data.map(d => d.value),
+        backgroundColor: colors,
+        borderRadius: 6,
+        barThickness: 36
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw + '%' } }
+      },
+      scales: {
+        x: { max: 80, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } },
+        y: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+makeEmployerChart('empStudents', [
+  {label:'Google',value:69},{label:'Meta',value:38},{label:'Amazon',value:38},{label:'TikTok',value:22},{label:'ByteDance',value:10}
+]);
+makeEmployerChart('empEarly', [
+  {label:'Google',value:69},{label:'Amazon',value:36},{label:'Meta',value:34},{label:'TikTok',value:20},{label:'ByteDance',value:14}
+]);
+makeEmployerChart('empExperienced', [
+  {label:'Google',value:68},{label:'Amazon',value:36},{label:'Meta',value:34},{label:'TikTok',value:15},{label:'ByteDance',value:12}
+]);
+
+// ====== 3. WHAT CANDIDATES LOOK FOR ======
+// Dynamic gradient colors per chart
+const PREF_COLORS = {
+  students: ['#2563eb', '#3b82f6', '#0891b2', '#7c3aed', '#6366f1', '#0d9488', '#8b5cf6'],
+  early:    ['#e11d48', '#f43f5e', '#0891b2', '#7c3aed', '#6366f1', '#0d9488', '#8b5cf6'],
+  exp:      ['#0891b2', '#06b6d4', '#2563eb', '#7c3aed', '#6366f1', '#0d9488', '#8b5cf6']
+};
+
+function makePrefChart(canvasId, data, colorSet) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [{
+        data: data.map(d => d.value),
+        backgroundColor: colorSet,
+        borderRadius: 5,
+        barThickness: 24
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw + '%' } }
+      },
+      scales: {
+        x: { max: 75, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+makePrefChart('prefStudents', [
+  {label:'Competitive salary',value:65},
+  {label:'Career growth',value:65},
+  {label:'Learning & development',value:61},
+  {label:'Job security',value:60},
+  {label:'Good reference',value:58},
+  {label:'Work-life balance',value:56},
+  {label:'Competitive benefits',value:55}
+], PREF_COLORS.students);
+
+makePrefChart('prefEarly', [
+  {label:'Competitive salary',value:63},
+  {label:'Career growth',value:60},
+  {label:'Work-life balance',value:58},
+  {label:'Job security',value:56},
+  {label:'Learning & development',value:55},
+  {label:'Inclusion & respect',value:53},
+  {label:'Flexible work',value:51}
+], PREF_COLORS.early);
+
+makePrefChart('prefExp', [
+  {label:'Competitive salary',value:65},
+  {label:'Job security',value:62},
+  {label:'Work-life balance',value:60},
+  {label:'Career growth',value:57},
+  {label:'Competitive benefits',value:54},
+  {label:'Employee wellness',value:54},
+  {label:'Flexible work',value:53}
+], PREF_COLORS.exp);
+
+// ====== 4. WHY CHOOSING US ======
+function makeWhyChart(canvasId, data, color) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: data.map(d => d.label),
+      datasets: [{
+        data: data.map(d => d.value),
+        backgroundColor: color,
+        borderRadius: 5,
+        barThickness: 26
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ctx.raw + '%' } }
+      },
+      scales: {
+        x: { max: 45, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+makeWhyChart('whyBD', [
+  {label:'Career advancement',value:35},
+  {label:'Attractive compensation',value:35},
+  {label:'Learn & build new skills',value:31},
+  {label:'Global career opportunities',value:30},
+  {label:'Strong company reputation',value:27},
+  {label:'Exposure to cutting-edge innovation',value:26}
+], BD_BLUE);
+
+makeWhyChart('whyTT', [
+  {label:'Career advancement',value:37},
+  {label:'Attractive compensation',value:36},
+  {label:'Learn & build new skills',value:33},
+  {label:'Innovation reputation',value:32},
+  {label:'Global career opportunities',value:31},
+  {label:'Diverse & dynamic work environment',value:30}
+], TT_PINK);
+
+// ====== 5. WHY NOT CHOOSING US ======
+makeWhyChart('whyNotBD', [
+  {label:"Don't know enough about company",value:35},
+  {label:'Work-life balance concerns',value:28},
+  {label:'No fitting job opportunities',value:28},
+  {label:'Job/business stability concerns',value:25},
+  {label:'Job expectations vs JD mismatch',value:20}
+], '#dc2626');
+
+makeWhyChart('whyNotTT', [
+  {label:'Work-life balance concerns',value:32},
+  {label:'Job/business stability concerns',value:28},
+  {label:"Don't know enough about company",value:26},
+  {label:'No fitting job opportunities',value:24},
+  {label:'Negative peer/online reviews',value:18}
+], '#dc2626');
+</script>
+
+</body>
+</html>

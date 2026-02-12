@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ByteDance LinkedIn Performance Dashboard 2025</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.1.0/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+  :root {
+    --bd-dark: #1a3a5c;
+    --bd-mid: #2d6aa0;
+    --bd-light: #4ba3e3;
+    --bd-pale: #b8daf5;
+    --bd-bg: #f0f6fb;
+    --bd-accent: #0fd4a3;
+    --bd-card: #ffffff;
+    --bd-text: #1e293b;
+    --bd-muted: #64748b;
+    --bd-border: #e2e8f0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bd-bg);
+    color: var(--bd-text);
+    line-height: 1.5;
+  }
+  .header {
+    background: linear-gradient(135deg, var(--bd-dark) 0%, var(--bd-mid) 100%);
+    color: #fff;
+    padding: 40px 24px 32px;
+    text-align: center;
+  }
+  .header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+  .header p { opacity: 0.8; margin-top: 6px; font-size: 15px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .section { margin-bottom: 40px; }
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--bd-dark);
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--bd-pale);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--bd-card);
+    border-radius: 10px;
+    padding: 18px;
+    border: 1px solid var(--bd-border);
+  }
+  .stat-card .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--bd-muted); font-weight: 600; }
+  .stat-card .value { font-size: 28px; font-weight: 700; color: var(--bd-dark); margin-top: 4px; }
+  .stat-card .sub { font-size: 12px; color: var(--bd-muted); margin-top: 2px; }
+  .chart-wrap {
+    background: var(--bd-card);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--bd-border);
+  }
+  .chart-wrap canvas { max-height: 380px; }
+
+  /* Top posts table */
+  .post-table { width: 100%; border-collapse: collapse; }
+  .post-table th {
+    background: var(--bd-dark);
+    color: #fff;
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .post-table td { padding: 12px; border-bottom: 1px solid var(--bd-border); font-size: 13px; vertical-align: top; }
+  .post-table tr:hover { background: var(--bd-bg); }
+  .post-rank {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bd-dark); color: #fff; font-weight: 700; font-size: 13px;
+  }
+  .post-rank.gold { background: #d4a017; }
+  .post-rank.silver { background: #8a8a8a; }
+  .post-rank.bronze { background: #a0622e; }
+  .post-text { max-width: 380px; line-height: 1.4; }
+  .post-text a { color: var(--bd-mid); text-decoration: none; font-weight: 600; font-size: 12px; }
+  .post-text a:hover { text-decoration: underline; }
+  .post-metric { font-weight: 600; white-space: nowrap; }
+  .post-date { color: var(--bd-muted); font-size: 12px; white-space: nowrap; }
+  .table-wrap { background: var(--bd-card); border-radius: 10px; overflow-x: auto; border: 1px solid var(--bd-border); }
+  .paid-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10px;
+    font-weight: 700;
+    background: #fef3c7;
+    color: #92400e;
+    margin-top: 4px;
+    letter-spacing: 0.3px;
+  }
+  .metric-split { font-size: 11px; color: var(--bd-muted); font-weight: 400; margin-top: 2px; }
+  .metric-split .org { color: #16a34a; }
+  .metric-split .paid { color: #d97706; }
+
+  /* Content analysis */
+  .analysis-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .analysis-card {
+    background: var(--bd-card);
+    border-radius: 10px;
+    padding: 24px;
+    border: 1px solid var(--bd-border);
+  }
+  .analysis-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--bd-dark);
+    margin-bottom: 12px;
+  }
+  .analysis-card ul { padding-left: 18px; }
+  .analysis-card li { margin-bottom: 8px; font-size: 14px; line-height: 1.5; }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .tag-green { background: #dcfce7; color: #166534; }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-purple { background: #f3e8ff; color: #7c3aed; }
+  .tag-amber { background: #fef3c7; color: #92400e; }
+  .positioning {
+    background: linear-gradient(135deg, var(--bd-dark), var(--bd-mid));
+    color: #fff;
+    padding: 24px;
+    border-radius: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .topic-section { margin-bottom: 16px; }
+  .topic-section h4 { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+  .topic-item { padding: 8px 0; border-bottom: 1px solid var(--bd-border); font-size: 14px; }
+  .topic-item:last-child { border-bottom: none; }
+
+  /* Demographics */
+  .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .demo-card {
+    background: var(--bd-card);
+    border-radius: 10px;
+    padding: 20px;
+    border: 1px solid var(--bd-border);
+  }
+  .demo-card h3 { font-size: 15px; font-weight: 700; color: var(--bd-dark); margin-bottom: 12px; }
+  .demo-bar-row { display: flex; align-items: center; margin-bottom: 6px; font-size: 12px; }
+  .demo-bar-label { width: 140px; flex-shrink: 0; color: var(--bd-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .demo-bar-track { flex: 1; height: 18px; background: var(--bd-bg); border-radius: 4px; overflow: hidden; margin: 0 8px; }
+  .demo-bar-fill { height: 100%; background: linear-gradient(90deg, var(--bd-light), var(--bd-mid)); border-radius: 4px; transition: width 0.6s; }
+  .demo-bar-val { width: 60px; text-align: right; font-weight: 600; color: var(--bd-text); flex-shrink: 0; }
+
+  .footer { text-align: center; padding: 24px; color: var(--bd-muted); font-size: 12px; }
+
+  @media (max-width: 600px) {
+    .header h1 { font-size: 20px; }
+    .stat-card .value { font-size: 22px; }
+    .post-text { max-width: 200px; }
+    .demo-bar-label { width: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ByteDance LinkedIn Performance Dashboard</h1>
+  <p>Feb 11, 2025 &mdash; Feb 10, 2026 &middot; 365 Days of Data</p>
+</div>
+
+<div class="container">
+
+  <!-- FOLLOWER GROWTH -->
+  <div class="section">
+    <div class="section-title">Follower Growth</div>
+    <div class="stats-grid" id="follower-stats"></div>
+    <div class="chart-wrap">
+      <canvas id="followerChart"></canvas>
+    </div>
+  </div>
+
+  <!-- TOP 10 POSTS -->
+  <div class="section">
+    <div class="section-title">Top 10 Posts of All Time</div>
+    <div class="table-wrap">
+      <table class="post-table" id="postsTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Date</th>
+            <th>Post</th>
+            <th>Impressions</th>
+            <th>Likes</th>
+            <th>Reposts</th>
+            <th>Comments</th>
+            <th>Follows</th>
+            <th>Eng. Rate</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CONTENT ANALYSIS -->
+  <div class="section">
+    <div class="section-title">Content Analysis</div>
+
+    <div class="positioning" id="positioning"></div>
+
+    <div class="analysis-grid">
+      <div class="analysis-card" id="viralCard"></div>
+      <div class="analysis-card" id="topicCard"></div>
+    </div>
+  </div>
+
+  <!-- FOLLOWER DEMOGRAPHICS -->
+  <div class="section">
+    <div class="section-title">Follower Demographics</div>
+    <p style="font-size:13px;color:var(--bd-muted);margin-bottom:14px;">Based on total follower base composition (all-time), not limited to new followers gained in 2025.</p>
+    <div class="demo-grid" id="demoGrid"></div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Data sourced from LinkedIn Analytics &middot; Dashboard generated Feb 2026
+</div>
+
+<script>
+// ============ DATA ============
+const FOLLOWERS = [{"date":"02/11/2025","total":428},{"date":"02/12/2025","total":517},{"date":"02/13/2025","total":464},{"date":"02/14/2025","total":337},{"date":"02/15/2025","total":209},{"date":"02/16/2025","total":290},{"date":"02/17/2025","total":529},{"date":"02/18/2025","total":524},{"date":"02/19/2025","total":491},{"date":"02/20/2025","total":535},{"date":"02/21/2025","total":427},{"date":"02/22/2025","total":303},{"date":"02/23/2025","total":236},{"date":"02/24/2025","total":632},{"date":"02/25/2025","total":728},{"date":"02/26/2025","total":728},{"date":"02/27/2025","total":570},{"date":"02/28/2025","total":442},{"date":"03/01/2025","total":302},{"date":"03/02/2025","total":336},{"date":"03/03/2025","total":737},{"date":"03/04/2025","total":612},{"date":"03/05/2025","total":589},{"date":"03/06/2025","total":508},{"date":"03/07/2025","total":415},{"date":"03/08/2025","total":283},{"date":"03/09/2025","total":379},{"date":"03/10/2025","total":702},{"date":"03/11/2025","total":598},{"date":"03/12/2025","total":923},{"date":"03/13/2025","total":633},{"date":"03/14/2025","total":468},{"date":"03/15/2025","total":274},{"date":"03/16/2025","total":348},{"date":"03/17/2025","total":635},{"date":"03/18/2025","total":607},{"date":"03/19/2025","total":506},{"date":"03/20/2025","total":506},{"date":"03/21/2025","total":426},{"date":"03/22/2025","total":243},{"date":"03/23/2025","total":269},{"date":"03/24/2025","total":431},{"date":"03/25/2025","total":575},{"date":"03/26/2025","total":505},{"date":"03/27/2025","total":614},{"date":"03/28/2025","total":408},{"date":"03/29/2025","total":236},{"date":"03/30/2025","total":196},{"date":"03/31/2025","total":395},{"date":"04/01/2025","total":411},{"date":"04/02/2025","total":587},{"date":"04/03/2025","total":511},{"date":"04/04/2025","total":450},{"date":"04/05/2025","total":291},{"date":"04/06/2025","total":299},{"date":"04/07/2025","total":556},{"date":"04/08/2025","total":488},{"date":"04/09/2025","total":461},{"date":"04/10/2025","total":646},{"date":"04/11/2025","total":475},{"date":"04/12/2025","total":343},{"date":"04/13/2025","total":394},{"date":"04/14/2025","total":583},{"date":"04/15/2025","total":591},{"date":"04/16/2025","total":480},{"date":"04/17/2025","total":515},{"date":"04/18/2025","total":460},{"date":"04/19/2025","total":347},{"date":"04/20/2025","total":341},{"date":"04/21/2025","total":568},{"date":"04/22/2025","total":565},{"date":"04/23/2025","total":583},{"date":"04/24/2025","total":542},{"date":"04/25/2025","total":473},{"date":"04/26/2025","total":579},{"date":"04/27/2025","total":1011},{"date":"04/28/2025","total":1199},{"date":"04/29/2025","total":509},{"date":"04/30/2025","total":452},{"date":"05/01/2025","total":412},{"date":"05/02/2025","total":387},{"date":"05/03/2025","total":265},{"date":"05/04/2025","total":329},{"date":"05/05/2025","total":451},{"date":"05/06/2025","total":518},{"date":"05/07/2025","total":455},{"date":"05/08/2025","total":445},{"date":"05/09/2025","total":384},{"date":"05/10/2025","total":301},{"date":"05/11/2025","total":431},{"date":"05/12/2025","total":597},{"date":"05/13/2025","total":493},{"date":"05/14/2025","total":519},{"date":"05/15/2025","total":532},{"date":"05/16/2025","total":524},{"date":"05/17/2025","total":278},{"date":"05/18/2025","total":339},{"date":"05/19/2025","total":659},{"date":"05/20/2025","total":509},{"date":"05/21/2025","total":524},{"date":"05/22/2025","total":508},{"date":"05/23/2025","total":781},{"date":"05/24/2025","total":385},{"date":"05/25/2025","total":445},{"date":"05/26/2025","total":604},{"date":"05/27/2025","total":678},{"date":"05/28/2025","total":760},{"date":"05/29/2025","total":624},{"date":"05/30/2025","total":512},{"date":"05/31/2025","total":341},{"date":"06/01/2025","total":340},{"date":"06/02/2025","total":656},{"date":"06/03/2025","total":672},{"date":"06/04/2025","total":728},{"date":"06/05/2025","total":595},{"date":"06/06/2025","total":531},{"date":"06/07/2025","total":359},{"date":"06/08/2025","total":388},{"date":"06/09/2025","total":889},{"date":"06/10/2025","total":792},{"date":"06/11/2025","total":790},{"date":"06/12/2025","total":794},{"date":"06/13/2025","total":610},{"date":"06/14/2025","total":410},{"date":"06/15/2025","total":454},{"date":"06/16/2025","total":996},{"date":"06/17/2025","total":892},{"date":"06/18/2025","total":864},{"date":"06/19/2025","total":916},{"date":"06/20/2025","total":692},{"date":"06/21/2025","total":512},{"date":"06/22/2025","total":573},{"date":"06/23/2025","total":1221},{"date":"06/24/2025","total":824},{"date":"06/25/2025","total":818},{"date":"06/26/2025","total":881},{"date":"06/27/2025","total":670},{"date":"06/28/2025","total":408},{"date":"06/29/2025","total":425},{"date":"06/30/2025","total":812},{"date":"07/01/2025","total":927},{"date":"07/02/2025","total":810},{"date":"07/03/2025","total":820},{"date":"07/04/2025","total":581},{"date":"07/05/2025","total":425},{"date":"07/06/2025","total":578},{"date":"07/07/2025","total":1006},{"date":"07/08/2025","total":932},{"date":"07/09/2025","total":848},{"date":"07/10/2025","total":763},{"date":"07/11/2025","total":1261},{"date":"07/12/2025","total":1645},{"date":"07/13/2025","total":992},{"date":"07/14/2025","total":1068},{"date":"07/15/2025","total":935},{"date":"07/16/2025","total":861},{"date":"07/17/2025","total":834},{"date":"07/18/2025","total":821},{"date":"07/19/2025","total":514},{"date":"07/20/2025","total":702},{"date":"07/21/2025","total":892},{"date":"07/22/2025","total":1040},{"date":"07/23/2025","total":1284},{"date":"07/24/2025","total":963},{"date":"07/25/2025","total":881},{"date":"07/26/2025","total":458},{"date":"07/27/2025","total":601},{"date":"07/28/2025","total":951},{"date":"07/29/2025","total":1069},{"date":"07/30/2025","total":1036},{"date":"07/31/2025","total":1072},{"date":"08/01/2025","total":906},{"date":"08/02/2025","total":602},{"date":"08/03/2025","total":653},{"date":"08/04/2025","total":1173},{"date":"08/05/2025","total":1224},{"date":"08/06/2025","total":1205},{"date":"08/07/2025","total":1269},{"date":"08/08/2025","total":955},{"date":"08/09/2025","total":597},{"date":"08/10/2025","total":637},{"date":"08/11/2025","total":1197},{"date":"08/12/2025","total":1204},{"date":"08/13/2025","total":1273},{"date":"08/14/2025","total":1211},{"date":"08/15/2025","total":1048},{"date":"08/16/2025","total":823},{"date":"08/17/2025","total":764},{"date":"08/18/2025","total":1162},{"date":"08/19/2025","total":1105},{"date":"08/20/2025","total":1164},{"date":"08/21/2025","total":1025},{"date":"08/22/2025","total":983},{"date":"08/23/2025","total":701},{"date":"08/24/2025","total":669},{"date":"08/25/2025","total":1189},{"date":"08/26/2025","total":1038},{"date":"08/27/2025","total":937},{"date":"08/28/2025","total":860},{"date":"08/29/2025","total":753},{"date":"08/30/2025","total":559},{"date":"08/31/2025","total":592},{"date":"09/01/2025","total":1057},{"date":"09/02/2025","total":980},{"date":"09/03/2025","total":1062},{"date":"09/04/2025","total":1075},{"date":"09/05/2025","total":1367},{"date":"09/06/2025","total":1576},{"date":"09/07/2025","total":712},{"date":"09/08/2025","total":1105},{"date":"09/09/2025","total":1082},{"date":"09/10/2025","total":823},{"date":"09/11/2025","total":1045},{"date":"09/12/2025","total":934},{"date":"09/13/2025","total":530},{"date":"09/14/2025","total":659},{"date":"09/15/2025","total":1008},{"date":"09/16/2025","total":726},{"date":"09/17/2025","total":1507},{"date":"09/18/2025","total":1030},{"date":"09/19/2025","total":883},{"date":"09/20/2025","total":504},{"date":"09/21/2025","total":677},{"date":"09/22/2025","total":1451},{"date":"09/23/2025","total":1182},{"date":"09/24/2025","total":1031},{"date":"09/25/2025","total":1168},{"date":"09/26/2025","total":896},{"date":"09/27/2025","total":555},{"date":"09/28/2025","total":690},{"date":"09/29/2025","total":1044},{"date":"09/30/2025","total":962},{"date":"10/01/2025","total":876},{"date":"10/02/2025","total":810},{"date":"10/03/2025","total":730},{"date":"10/04/2025","total":521},{"date":"10/05/2025","total":629},{"date":"10/06/2025","total":1140},{"date":"10/07/2025","total":1055},{"date":"10/08/2025","total":883},{"date":"10/09/2025","total":921},{"date":"10/10/2025","total":805},{"date":"10/11/2025","total":542},{"date":"10/12/2025","total":617},{"date":"10/13/2025","total":1084},{"date":"10/14/2025","total":999},{"date":"10/15/2025","total":951},{"date":"10/16/2025","total":789},{"date":"10/17/2025","total":727},{"date":"10/18/2025","total":446},{"date":"10/19/2025","total":511},{"date":"10/20/2025","total":971},{"date":"10/21/2025","total":911},{"date":"10/22/2025","total":783},{"date":"10/23/2025","total":977},{"date":"10/24/2025","total":742},{"date":"10/25/2025","total":584},{"date":"10/26/2025","total":688},{"date":"10/27/2025","total":1137},{"date":"10/28/2025","total":992},{"date":"10/29/2025","total":856},{"date":"10/30/2025","total":807},{"date":"10/31/2025","total":611},{"date":"11/01/2025","total":407},{"date":"11/02/2025","total":590},{"date":"11/03/2025","total":797},{"date":"11/04/2025","total":879},{"date":"11/05/2025","total":786},{"date":"11/06/2025","total":859},{"date":"11/07/2025","total":649},{"date":"11/08/2025","total":439},{"date":"11/09/2025","total":639},{"date":"11/10/2025","total":871},{"date":"11/11/2025","total":832},{"date":"11/12/2025","total":803},{"date":"11/13/2025","total":868},{"date":"11/14/2025","total":670},{"date":"11/15/2025","total":483},{"date":"11/16/2025","total":526},{"date":"11/17/2025","total":1032},{"date":"11/18/2025","total":903},{"date":"11/19/2025","total":765},{"date":"11/20/2025","total":715},{"date":"11/21/2025","total":538},{"date":"11/22/2025","total":485},{"date":"11/23/2025","total":698},{"date":"11/24/2025","total":1154},{"date":"11/25/2025","total":916},{"date":"11/26/2025","total":780},{"date":"11/27/2025","total":732},{"date":"11/28/2025","total":595},{"date":"11/29/2025","total":364},{"date":"11/30/2025","total":450},{"date":"12/01/2025","total":800},{"date":"12/02/2025","total":728},{"date":"12/03/2025","total":674},{"date":"12/04/2025","total":745},{"date":"12/05/2025","total":565},{"date":"12/06/2025","total":416},{"date":"12/07/2025","total":415},{"date":"12/08/2025","total":832},{"date":"12/09/2025","total":670},{"date":"12/10/2025","total":750},{"date":"12/11/2025","total":735},{"date":"12/12/2025","total":628},{"date":"12/13/2025","total":363},{"date":"12/14/2025","total":407},{"date":"12/15/2025","total":844},{"date":"12/16/2025","total":817},{"date":"12/17/2025","total":716},{"date":"12/18/2025","total":764},{"date":"12/19/2025","total":788},{"date":"12/20/2025","total":554},{"date":"12/21/2025","total":536},{"date":"12/22/2025","total":1147},{"date":"12/23/2025","total":1005},{"date":"12/24/2025","total":612},{"date":"12/25/2025","total":633},{"date":"12/26/2025","total":719},{"date":"12/27/2025","total":611},{"date":"12/28/2025","total":1139},{"date":"12/29/2025","total":1700},{"date":"12/30/2025","total":1051},{"date":"12/31/2025","total":595},{"date":"01/01/2026","total":576},{"date":"01/02/2026","total":785},{"date":"01/03/2026","total":637},{"date":"01/04/2026","total":851},{"date":"01/05/2026","total":1278},{"date":"01/06/2026","total":1279},{"date":"01/07/2026","total":1033},{"date":"01/08/2026","total":843},{"date":"01/09/2026","total":694},{"date":"01/10/2026","total":717},{"date":"01/11/2026","total":918},{"date":"01/12/2026","total":1214},{"date":"01/13/2026","total":1202},{"date":"01/14/2026","total":1000},{"date":"01/15/2026","total":1049},{"date":"01/16/2026","total":948},{"date":"01/17/2026","total":625},{"date":"01/18/2026","total":789},{"date":"01/19/2026","total":1265},{"date":"01/20/2026","total":1100},{"date":"01/21/2026","total":1143},{"date":"01/22/2026","total":1215},{"date":"01/23/2026","total":1214},{"date":"01/24/2026","total":803},{"date":"01/25/2026","total":760},{"date":"01/26/2026","total":1134},{"date":"01/27/2026","total":1055},{"date":"01/28/2026","total":1008},{"date":"01/29/2026","total":862},{"date":"01/30/2026","total":765},{"date":"01/31/2026","total":498},{"date":"02/01/2026","total":542},{"date":"02/02/2026","total":797},{"date":"02/03/2026","total":939},{"date":"02/04/2026","total":957},{"date":"02/05/2026","total":867},{"date":"02/06/2026","total":603},{"date":"02/07/2026","total":482},{"date":"02/08/2026","total":532},{"date":"02/09/2026","total":859},{"date":"02/10/2026","total":1065}];
+
+const POSTS = [
+  {date:"08/06/2025",impressions:341895,likes:240,comments:4,reposts:5,follows:205,engRate:0.1361,link:"https://www.linkedin.com/feed/update/urn:li:activity:7358678389941047296",title:"From a small apartment to a global stage. \ud83c\udf0d ByteDance started in a four-bedroom flat with a bold mission: Inspire Creativity, Enrich Life. That vision still drives us\u2014fueling innovation, expanding access to creative tools, and building products that enrich the lives of users and communities around the world. Humble beginnings. Global impact.",
+    boosted:true, orgImpressions:10905, paidImpressions:330990, orgLikes:132, paidLikes:108, orgComments:1, paidComments:3, orgReposts:5, paidReposts:0, paidFollows:205, paidPct:96.8},
+  {date:"06/25/2025",impressions:327309,likes:966,comments:14,reposts:88,follows:158,engRate:0.2841,link:"https://www.linkedin.com/feed/update/urn:li:activity:7343458230364229632",title:"How ByteDance became ByteDance. ByteDance isn\u2019t just a name. It\u2019s a mission in motion. When the company was founded in 2012, even the name was crafted with intention. BYTE = the data and innovation at our core. DANCE = the imagination and energy that brings it to life. Together, they reflect the mission we still live by 13 years later: Inspire creativity. Enrich life.",
+    boosted:true, orgImpressions:157494, paidImpressions:169815, orgLikes:897, paidLikes:69, orgComments:13, paidComments:1, orgReposts:86, paidReposts:2, paidFollows:158, paidPct:51.9},
+  {date:"07/22/2025",impressions:281688,likes:222,comments:5,reposts:14,follows:184,engRate:0.1361,link:"https://www.linkedin.com/feed/update/urn:li:activity:7353242704543166465",title:"\u201cInspire Creativity, Enrich Life\u201d is the heartbeat of everything we build. From the beginning, ByteDance was founded on a simple but powerful belief: Creativity is everywhere \u2014 but opportunity isn\u2019t. Technology can change that. That\u2019s the reason we\u2019ve built a global ecosystem of products designed to unlock creativity, foster connection, and spark discovery.",
+    boosted:true, orgImpressions:24212, paidImpressions:257476, orgLikes:121, paidLikes:101, orgComments:3, paidComments:2, orgReposts:13, paidReposts:1, paidFollows:184, paidPct:91.4},
+  {date:"07/10/2025",impressions:275079,likes:233,comments:5,reposts:16,follows:155,engRate:0.1377,link:"https://www.linkedin.com/feed/update/urn:li:activity:7348893963254157313",title:"The smallest insights spark the biggest ideas. During a hectic travel season, Zhang Yiming built a tool to recommend train tickets. A simple truth emerged: the best experiences are when information finds you. Years later, he noticed commuters weren\u2019t reading newspapers\u2014they were glued to their phones. These insights, paired with support from his roommate Liang Rubo, sparked ByteDance.",
+    boosted:true, orgImpressions:38558, paidImpressions:236521, orgLikes:170, paidLikes:63, orgComments:4, paidComments:1, orgReposts:16, paidReposts:0, paidFollows:155, paidPct:86.0},
+  {date:"12/23/2025",impressions:200953,likes:1157,comments:17,reposts:31,follows:0,engRate:0.3343,link:"https://www.linkedin.com/feed/update/urn:li:activity:7409201778803539968",title:"As we wrap up 2025, we\u2019re looking back on the small, everyday moments that shaped our year at ByteDance, moments where our ByteDancers shaped our story through the ordinary things that brought our mission to life, inspiring creativity and enriching life across our global offices.",
+    boosted:false},
+  {date:"04/16/2025",impressions:77593,likes:342,comments:7,reposts:23,follows:0,engRate:0.2818,link:"https://www.linkedin.com/feed/update/urn:li:activity:7318075812388261889",title:"Celebrating 13 Years of ByteDance \ud83d\ude4c From London to Los Angeles to Singapore and beyond, ByteDancers came together to reflect on 13 years of innovation, reconnect with teammates, and celebrate the culture that makes us who we are.",
+    boosted:false},
+  {date:"07/24/2025",impressions:73267,likes:464,comments:10,reposts:24,follows:0,engRate:0.0441,link:"https://www.linkedin.com/feed/update/urn:li:activity:7354162994555084801",title:"Happy Intern Day! \ud83d\udc99\ud83c\udf89 Today, we celebrate our talented ByteDance interns, whose creativity and bold ideas drive our progress. From sparking innovation to making meaningful impact, your contributions are felt across every team.",
+    boosted:false},
+  {date:"05/13/2025",impressions:61332,likes:200,comments:5,reposts:11,follows:0,engRate:0.0504,link:"https://www.linkedin.com/feed/update/urn:li:activity:7328222552055525376",title:"Thinking about applying to ByteDance? \ud83d\udcdd Cathy Choi, Global HR Lead for our Trust & Safety team, shares some valuable tips on how to make your resume stand out.",
+    boosted:false},
+  {date:"10/14/2025",impressions:59478,likes:117,comments:8,reposts:5,follows:0,engRate:0.0948,link:"https://www.linkedin.com/feed/update/urn:li:activity:7383864608563916801",title:"Meet Chang-Lin, a Software Engineer on the Data Infrastructure team. He earned his PhD from Purdue University and specializes in optimizing large-scale dynamic systems. His favorite part about working at ByteDance? Collaborating with colleagues to solve complex, real-world problems.",
+    boosted:false},
+  {date:"12/10/2025",impressions:59544,likes:140,comments:4,reposts:2,follows:0,engRate:0.2853,link:"https://www.linkedin.com/feed/update/urn:li:activity:7404520640978100224",title:"Meet Zhijian, our Product Management Intern on the Data Applied Machine Learning (AML) team! He works across the product lifecycle, collaborating with engineers and designers to balance technical feasibility with user needs.",
+    boosted:false}
+];
+
+const DEMOGRAPHICS = {
+  loc:[{name:"China",value:269510},{name:"India",value:166324},{name:"United States",value:136645},{name:"Singapore",value:88645},{name:"Indonesia",value:72095},{name:"Brazil",value:47341},{name:"Malaysia",value:42784},{name:"United Kingdom",value:20909},{name:"Philippines",value:13791},{name:"Vietnam",value:13248}],
+  jf:[{name:"Engineering",value:167060},{name:"Business Dev",value:104250},{name:"Operations",value:96836},{name:"Sales",value:90111},{name:"IT",value:80503},{name:"HR",value:74258},{name:"Marketing",value:69106},{name:"Finance",value:37746},{name:"Media & Comms",value:36264},{name:"Program Mgmt",value:33985}],
+  sen:[{name:"Senior",value:421141},{name:"Entry",value:407271},{name:"Manager",value:109576},{name:"Director",value:89095},{name:"VP",value:28575},{name:"Owner",value:23167},{name:"CXO",value:18755},{name:"Training",value:16669},{name:"Partner",value:6778},{name:"Unpaid",value:1510}],
+  ind:[{name:"Software Dev",value:153361},{name:"IT Services",value:112257},{name:"Tech & Internet",value:78020},{name:"Advertising",value:47558},{name:"Consulting",value:45460},{name:"Financial Services",value:42711},{name:"Banking",value:30342},{name:"Higher Ed",value:30157},{name:"Telecom",value:20087},{name:"Retail",value:16705}],
+  cs:[{name:"10,001+",value:345214},{name:"1,001-5,000",value:136128},{name:"51-200",value:106224},{name:"11-50",value:89227},{name:"201-500",value:76587},{name:"501-1,000",value:66458},{name:"5,001-10,000",value:65567},{name:"2-10",value:51544},{name:"1",value:7906}]
+};
+
+// ============ FOLLOWER GROWTH ============
+(function(){
+  // Build cumulative
+  const labels = [];
+  const cumulative = [];
+  const daily = [];
+  let running = 0;
+  FOLLOWERS.forEach((f,i) => {
+    running += f.total;
+    cumulative.push(running);
+    daily.push(f.total);
+    // Convert date to short label
+    const [m,d,y] = f.date.split('/');
+    labels.push(`${m}/${d}`);
+  });
+
+  const totalGrowth = running;
+  const avgDaily = Math.round(running / FOLLOWERS.length);
+  const bestDay = Math.max(...daily);
+  const bestIdx = daily.indexOf(bestDay);
+  const bestDate = FOLLOWERS[bestIdx].date;
+
+  // Stats cards
+  document.getElementById('follower-stats').innerHTML = `
+    <div class="stat-card"><div class="label">Total New Followers</div><div class="value">${totalGrowth.toLocaleString()}</div><div class="sub">Over 365 days</div></div>
+    <div class="stat-card"><div class="label">Average Daily Net</div><div class="value">${avgDaily.toLocaleString()}</div><div class="sub">followers/day</div></div>
+    <div class="stat-card"><div class="label">Best Single Day</div><div class="value">+${bestDay.toLocaleString()}</div><div class="sub">${bestDate}</div></div>
+    <div class="stat-card"><div class="label">Days Tracked</div><div class="value">${FOLLOWERS.length}</div><div class="sub">Feb 2025 \u2013 Feb 2026</div></div>
+  `;
+
+  // Milestones
+  const milestones = [50000, 100000, 150000, 200000, 250000];
+  const annotations = {};
+  milestones.forEach(m => {
+    const idx = cumulative.findIndex(c => c >= m);
+    if (idx >= 0) {
+      annotations['m'+m] = {
+        type: 'line',
+        xMin: idx, xMax: idx,
+        borderColor: 'rgba(77,163,227,0.4)',
+        borderWidth: 1,
+        borderDash: [4,4],
+        label: {
+          display: true,
+          content: (m/1000)+'K',
+          position: 'start',
+          backgroundColor: 'rgba(26,58,92,0.85)',
+          color: '#fff',
+          font: {size:11, weight:'bold'},
+          padding: 4,
+          borderRadius: 4
+        }
+      };
+    }
+  });
+
+  // Top 5 viral days
+  const sorted = daily.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v).slice(0,5);
+  sorted.forEach((s,j) => {
+    annotations['v'+j] = {
+      type: 'point',
+      xValue: s.i,
+      yValue: cumulative[s.i],
+      backgroundColor: '#0fd4a3',
+      borderColor: '#fff',
+      borderWidth: 2,
+      radius: 6,
+      label: {
+        display: true,
+        content: `+${s.v} (${FOLLOWERS[s.i].date})`,
+        position: 'end',
+        backgroundColor: 'rgba(15,212,163,0.9)',
+        color: '#fff',
+        font: {size:10, weight:'bold'},
+        padding: 4,
+        borderRadius: 4,
+        yAdjust: -14 - (j % 2) * 16
+      }
+    };
+  });
+
+  new Chart(document.getElementById('followerChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Cumulative Followers Gained',
+        data: cumulative,
+        borderColor: '#2d6aa0',
+        backgroundColor: 'rgba(75,163,227,0.08)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        borderWidth: 2.5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        annotation: { annotations },
+        tooltip: {
+          callbacks: {
+            title: (items) => FOLLOWERS[items[0].dataIndex].date,
+            label: (item) => {
+              const idx = item.dataIndex;
+              return [
+                'Cumulative: ' + cumulative[idx].toLocaleString(),
+                'Daily net: +' + daily[idx].toLocaleString()
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            maxTicksLimit: 12,
+            font: {size: 11}
+          },
+          grid: { display: false }
+        },
+        y: {
+          ticks: {
+            callback: v => (v/1000)+'K',
+            font: {size: 11}
+          },
+          grid: { color: '#f0f0f0' }
+        }
+      }
+    },
+    plugins: [window['chartjs-plugin-annotation'] || {}]
+  });
+
+  // Set chart height
+  document.getElementById('followerChart').parentElement.style.height = '400px';
+})();
+
+// ============ TOP 10 POSTS ============
+(function(){
+  const tbody = document.querySelector('#postsTable tbody');
+  POSTS.forEach((p,i) => {
+    const rankClass = i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    const summary = p.title.length > 160 ? p.title.substring(0,160) + '...' : p.title;
+    const badge = p.boosted ? `<br><span class="paid-badge">BOOSTED &middot; ${p.paidPct}% paid</span>` : '';
+
+    let impCell, likeCell, repostCell, commentCell, followCell;
+    if (p.boosted) {
+      impCell = `<td class="post-metric">${p.impressions.toLocaleString()}<div class="metric-split"><span class="org">${p.orgImpressions.toLocaleString()} org</span><br><span class="paid">${p.paidImpressions.toLocaleString()} paid</span></div></td>`;
+      likeCell = `<td class="post-metric">${p.likes.toLocaleString()}<div class="metric-split"><span class="org">${p.orgLikes.toLocaleString()} org</span><br><span class="paid">${p.paidLikes.toLocaleString()} paid</span></div></td>`;
+      repostCell = `<td class="post-metric">${p.reposts}<div class="metric-split"><span class="org">${p.orgReposts} org</span><br><span class="paid">${p.paidReposts} paid</span></div></td>`;
+      commentCell = `<td class="post-metric">${p.comments}<div class="metric-split"><span class="org">${p.orgComments} org</span><br><span class="paid">${p.paidComments} paid</span></div></td>`;
+      followCell = `<td class="post-metric">${p.follows}<div class="metric-split"><span class="paid">${p.paidFollows} paid</span></div></td>`;
+    } else {
+      impCell = `<td class="post-metric">${p.impressions.toLocaleString()}<div class="metric-split"><span class="org">organic</span></div></td>`;
+      likeCell = `<td class="post-metric">${p.likes.toLocaleString()}</td>`;
+      repostCell = `<td class="post-metric">${p.reposts}</td>`;
+      commentCell = `<td class="post-metric">${p.comments}</td>`;
+      followCell = `<td class="post-metric">${p.follows || '\u2014'}</td>`;
+    }
+
+    tbody.innerHTML += `<tr>
+      <td><span class="post-rank ${rankClass}">${i+1}</span></td>
+      <td class="post-date">${p.date}</td>
+      <td class="post-text">${summary}${badge}<br><a href="${p.link}" target="_blank">View post &rarr;</a></td>
+      ${impCell}${likeCell}${repostCell}${commentCell}${followCell}
+      <td class="post-metric">${(p.engRate*100).toFixed(1)}%</td>
+    </tr>`;
+  });
+})();
+
+// ============ CONTENT ANALYSIS ============
+(function(){
+  // Positioning
+  document.getElementById('positioning').innerHTML = `
+    &ldquo;ByteDance attracts ambitious tech talent by showing the human side of building at massive scale &mdash; origin stories that inspire, employee journeys that prove growth is real, and a culture where curiosity and ownership drive global impact.&rdquo;
+  `;
+
+  // Viral patterns
+  document.getElementById('viralCard').innerHTML = `
+    <h3>Why They Went Viral</h3>
+    <ul>
+      <li><span class="tag tag-blue">Origin Storytelling</span> The top 4 posts are origin/mission narratives about ByteDance&rsquo;s founding, mission, and name. <strong>However, all 4 were heavily boosted with paid budget</strong> (52&ndash;97% of impressions from ads). The organic reach on these ranged from 11K&ndash;157K &mdash; still strong, but the 200K&ndash;340K totals are largely paid-amplified. The standout: Post #2 (&ldquo;How ByteDance became ByteDance&rdquo;) earned 157K organic impressions and 897 organic likes, proving origin stories genuinely resonate even without paid support.</li>
+      <li><span class="tag tag-green">Year-End Retrospectives</span> The #5 post (200K impressions, 1,157 likes) is <strong>the top purely organic post</strong> &mdash; a year-in-review celebrating everyday ByteDancer moments. Nostalgia + team pride = the highest like count of any post, all without a single dollar of paid spend. This is your best proof of genuine content-market fit.</li>
+      <li><span class="tag tag-purple">Milestone Celebrations</span> The 13th anniversary post (77K) and Intern Day post (73K), both purely organic, show that cultural celebrations with photos and team energy consistently break through. They humanize the brand and invite community participation.</li>
+      <li><span class="tag tag-amber">Employee Spotlights with Career Utility</span> Resume tips (61K), PhD engineer profiles (59K), and intern journeys (59K) &mdash; all organic &mdash; perform well because they combine personal storytelling with actionable career value. Candidates follow for this content.</li>
+    </ul>
+  `;
+
+  // Topics
+  document.getElementById('topicCard').innerHTML = `
+    <h3>Future Topic Suggestions</h3>
+
+    <div class="topic-section">
+      <h4><span class="tag tag-green">Double Down</span> Proven winners to do more of</h4>
+      <div class="topic-item"><strong>Founder &amp; Origin Stories:</strong> Serialize the founding journey &mdash; early product decisions, first hires, pivotal failures. Each chapter becomes a standalone viral post.</div>
+      <div class="topic-item"><strong>Employee Growth Journeys:</strong> &ldquo;First 90 days&rdquo; stories, career progression timelines, intern-to-full-time arcs. These directly serve your largest audience (Entry + Senior level).</div>
+      <div class="topic-item"><strong>Annual/Milestone Celebrations:</strong> Turn every cultural moment (team anniversaries, product launches, office openings) into visual recap content.</div>
+    </div>
+
+    <div class="topic-section">
+      <h4><span class="tag tag-blue">Expand Into</span> Adjacent territories</h4>
+      <div class="topic-item"><strong>Engineering Deep-Dives:</strong> Your top follower segment is Engineering (167K). Technical posts about infrastructure, ML systems, or distributed architecture would resonate strongly.</div>
+      <div class="topic-item"><strong>Manager &amp; Leadership Content:</strong> 109K manager-level followers want leadership frameworks, team-building approaches, and decision-making stories from ByteDance leaders.</div>
+      <div class="topic-item"><strong>&ldquo;How We Built It&rdquo; Product Explainers:</strong> The CapCut product story post signals appetite. Expand to TikTok features, recommendation systems, or BytePlus cloud products.</div>
+    </div>
+
+    <div class="topic-section">
+      <h4><span class="tag tag-purple">Experiment With</span> Higher risk, high reward ideas</h4>
+      <div class="topic-item"><strong>Day-in-the-Life Video Content:</strong> Short-form video following engineers, PMs, or designers through their actual workday. Native to the ByteDance brand DNA.</div>
+      <div class="topic-item"><strong>Contrarian Takes on Tech Culture:</strong> Posts challenging conventional wisdom (&ldquo;Why we don&rsquo;t do [common practice]&rdquo;) drive debate and shares.</div>
+      <div class="topic-item"><strong>Data-Driven Industry Insights:</strong> Leverage ByteDance&rsquo;s unique position to share anonymized trends, benchmarks, or research findings that the tech community would reference and share.</div>
+    </div>
+  `;
+})();
+
+// ============ DEMOGRAPHICS ============
+(function(){
+  const grid = document.getElementById('demoGrid');
+  const sections = [
+    {title: 'Top Countries', data: DEMOGRAPHICS.loc},
+    {title: 'Job Function', data: DEMOGRAPHICS.jf},
+    {title: 'Seniority', data: DEMOGRAPHICS.sen},
+    {title: 'Industry', data: DEMOGRAPHICS.ind},
+    {title: 'Company Size', data: DEMOGRAPHICS.cs}
+  ];
+
+  sections.forEach(s => {
+    const max = Math.max(...s.data.map(d=>d.value));
+    let html = `<div class="demo-card"><h3>${s.title}</h3>`;
+    s.data.forEach(d => {
+      const pct = (d.value / max * 100).toFixed(1);
+      html += `<div class="demo-bar-row">
+        <span class="demo-bar-label" title="${d.name}">${d.name}</span>
+        <div class="demo-bar-track"><div class="demo-bar-fill" style="width:${pct}%"></div></div>
+        <span class="demo-bar-val">${d.value >= 1000 ? (d.value/1000).toFixed(0)+'K' : d.value}</span>
+      </div>`;
+    });
+    html += '</div>';
+    grid.innerHTML += html;
+  });
+})();
+</script>
+</body>
+</html>
